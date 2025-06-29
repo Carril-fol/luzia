@@ -10,5 +10,4 @@ class UserEntity(Base):
     last_name = Column(String)
     email = Column(String, unique=True)
     password = Column(String)
-    last_login = Column(Time)
     date_register = Column(Time)
