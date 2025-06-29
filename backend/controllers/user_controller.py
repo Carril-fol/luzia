@@ -1,3 +1,4 @@
+from pydantic import ValidationError
 from flask import request, make_response, Blueprint
 from flask_jwt_extended import create_access_token, create_refresh_token, set_access_cookies, set_refresh_cookies, unset_jwt_cookies
 
@@ -23,8 +24,10 @@ def register_user():
         set_access_cookies(response, access_token)
         set_refresh_cookies(response, refresh_token)
         return response
+    except ValidationError as error:
+        return {"error": str(error.errors())}, 400 
     except Exception as error:
-        return make_response({"error": str(error)}, 400)
+        return {"error": str(error)}, 400
     
 @user_controller.route("/login", methods=["POST"])
 def login_user():
@@ -39,6 +42,8 @@ def login_user():
         set_access_cookies(response, access_token)
         set_refresh_cookies(response, refresh_token)
         return response
+    except ValidationError as error:
+        return {"error": str(error.errors())}, 400 
     except Exception as error:
         return make_response({"msg": str(error)}, 400)
     
