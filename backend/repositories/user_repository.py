@@ -6,6 +6,10 @@ class UserRepository(Repository):
     def get_user_by_id(self, user_entity, id):
         return self.get_register_entity(user_entity, id)
 
+    def get_user_by_email(self, email):
+        with self.get_session() as session:
+            return session.query(UserEntity).filter(UserEntity.email == email).first()
+
     def get_users(self, user_entity):
         return self.get_registers_entity(user_entity)
 
