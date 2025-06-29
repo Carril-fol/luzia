@@ -1,17 +1,16 @@
 from datetime import time, datetime
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator, EmailStr, model_validator
+from pydantic import BaseModel, Field, field_validator, EmailStr, model_validator, ConfigDict
 
 class UserModel(BaseModel):
-    id: Optional[int] = Field(default=None, description="ID of the user")
+    id: int = Field(default=None, description="ID of the user")
     username: str = Field(default=None, description="Username from the user")
     first_name: str
     last_name: str
-    email: EmailStr
-    last_login: time
 
 
 class CreateUserModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     username: str = Field(default=None, description="Username from the user")
     first_name: str
     last_name: str
@@ -19,7 +18,6 @@ class CreateUserModel(BaseModel):
     password: str
     confirm_password: str
     date_register: Optional[datetime] = Field(default=datetime.now())
-    last_login: Optional[datetime] = Field(default=datetime.now())
 
     @field_validator("password")
     def validate_password(cls, value):
@@ -34,3 +32,9 @@ class CreateUserModel(BaseModel):
         if self.password != self.confirm_password:
             raise ValueError("Passwords do not match")
         return self
+    
+
+class AuthenticateUserModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    email: EmailStr
+    password: str
