@@ -1,4 +1,4 @@
-from flask import request, make_response, Blueprint
+from flask import request, make_response, Blueprint, json
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from pydantic import ValidationError
 
@@ -8,6 +8,8 @@ from repositories.user_repository import UserRepository
 from services.blog_service import BlogService
 
 from decorators.blog_decorator import is_blog_from_user
+
+from extensions import redis_client
 
 blog_repository = BlogRepository()
 user_repository = UserRepository()
@@ -43,8 +45,15 @@ def get_blog(id: int):
 @jwt_required()
 def get_blogs():
     try:
-        blogs = list(blog_service.get_blogs())
-        return make_response({"data": blogs}, 200)
+        cached_blogs = redis_client.get("blogs")
+        if cached_blogs:
+            blogs = json.loads(cached_blogs)
+            source = "redis"
+        else:
+            blogs = list(blog_service.get_blogs())
+            redis_client.set("blogs", json.dumps(blogs), ex=120)
+            source = "db"
+        return make_response({"data": blogs, "source": source}, 200)
     except Exception as error:
         return {"error": str(error)}, 400
     
