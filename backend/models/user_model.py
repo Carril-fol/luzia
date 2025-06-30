@@ -17,7 +17,7 @@ class CreateUserModel(BaseModel):
     email: EmailStr
     password: str
     confirm_password: str
-    date_register: Optional[datetime] = Field(default=datetime.now())
+    date_register: Optional[datetime] = Field(default_factory=datetime.now)
 
     @field_validator("password")
     def validate_password(cls, value):
