@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+
+  database:
+      image: mysql:8.0
+      environment:
+        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      ports:
+        - "3306:3306"
+      networks:
+        - app-network
+        
+  cache:
+    image: redis:6
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  luzia-rest-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8000"
+    depends_on:
+      - database
+      - cache
+    environment:
+      - DB_HOST=database
+      - CACHE_HOST=${CACHE_HOST}
+      - MYSQL_USER=${MYSQL_USER}  
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+    networks:
+      - app-network
+
+volumes:
+  redis-data:
+
+networks:
+  app-network:
+    driver: bridge
